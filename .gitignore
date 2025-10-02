@@ -1,2 +1,5 @@
 submissoes/*
 !submissoes/.gitkeep
+
+# não versionar segredos locais
+.streamlit/secrets.toml
