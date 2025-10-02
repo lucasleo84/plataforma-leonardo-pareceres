@@ -240,6 +240,35 @@ else:
 
     st.header("Administração / Acompanhamento")
 
+    # ===== AÇÕES DE EDIÇÃO (somente Admin) =====
+    st.subheader("Ações de edição")
+
+    # Substituir a planilha de distribuição no servidor do app
+    with st.expander("Atualizar planilha de distribuição (substituir .xlsx)", expanded=True):
+        up = st.file_uploader(
+            "Selecione a nova planilha .xlsx",
+            type=["xlsx"],
+            key="upl_dist_admin2"
+        )
+
+        # Info do arquivo atual
+        try:
+            from datetime import datetime
+            mtime = os.path.getmtime(ARQ_DISTRIB)
+            st.caption(f"Arquivo atual: **{ARQ_DISTRIB}** — última modificação: {datetime.fromtimestamp(mtime).strftime('%d/%m/%Y %H:%M')}")
+        except Exception:
+            st.caption(f"Arquivo atual: **{ARQ_DISTRIB}**")
+
+        if up is not None:
+            try:
+                with open(ARQ_DISTRIB, "wb") as f:
+                    f.write(up.getbuffer())
+                st.success("Distribuição atualizada com sucesso.")
+                st.cache_data.clear()
+                st.rerun()
+            except Exception as e:
+                st.error(f"Falha ao atualizar a planilha: {e}")
+    
     col1, col2, col3 = st.columns(3)
     with col1:
         total_alunos = dist["aluno"].nunique()
