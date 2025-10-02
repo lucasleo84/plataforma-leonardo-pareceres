@@ -205,7 +205,7 @@ if modo == "Aluno":
 
     with st.form("form_parecer_anexo"):
         uploads = st.file_uploader(
-            "Envie seu parecer (PDF, DOCX ou ZIP)",
+            "Envie seu parecer (PDF, DOCX ou ZIP) somente após a reunião da Câmara",
             type=["pdf", "docx", "zip"],
             accept_multiple_files=True
         )
