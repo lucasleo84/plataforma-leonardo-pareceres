@@ -12,7 +12,19 @@ PASTA_SUBMISSOES = "submissoes"                           # onde salvar os arqui
 PASTA_PROJETOS = "projetos"                               # onde ficam os PDFs dos projetos (opcional p/ links)
 ARQ_LOG = os.path.join(PASTA_SUBMISSOES, "log_submissoes.csv")
 # defina no secrets: [general] ADMIN_CODE="..."  (em produção use segredo forte)
-ADMIN_CODE = st.secrets.get("ADMIN_CODE", "leonardo2025")
+# Lê a senha do secrets tanto na raiz quanto dentro de [general]
+def _get_admin_code():
+    try:
+        s = st.secrets
+        if "ADMIN_CODE" in s:                       # caso: ADMIN_CODE na raiz
+            return str(s["ADMIN_CODE"])
+        if "general" in s and "ADMIN_CODE" in s["general"]:   # caso: [general] ADMIN_CODE="..."
+            return str(s["general"]["ADMIN_CODE"])
+    except Exception:
+        pass
+    return "leonardo2025"  # troque por "" se quiser obrigar uso do Secrets
+
+ADMIN_CODE = _get_admin_code()
 
 os.makedirs(PASTA_SUBMISSOES, exist_ok=True)
 os.makedirs(PASTA_PROJETOS, exist_ok=True)
