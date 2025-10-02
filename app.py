@@ -209,7 +209,7 @@ if modo == "Aluno":
             type=["pdf", "docx", "zip"],
             accept_multiple_files=True
         )
-        concordo = st.checkbox("Declaro que li as instruções e estou enviando meu parecer.")
+        concordo = st.checkbox("Declaro que estou enviando meu parecer apenas APÓS a reunião da Câmara.")
         submit = st.form_submit_button("Enviar Parecer ✅")
 
     if submit:
