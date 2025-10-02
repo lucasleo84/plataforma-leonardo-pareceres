@@ -17,11 +17,12 @@ os.makedirs(PASTA_SUBMISSOES, exist_ok=True)
 os.makedirs(PASTA_PROJETOS, exist_ok=True)
 
 # ========== FUNÇÕES AUXILIARES ==========
-@st.cache_data
-def carregar_distribuicao(caminho: str) -> pd.DataFrame:
+@st.cache_data(show_spinner=False)
+def carregar_distribuicao(caminho: str, _sig: float) -> pd.DataFrame:
     """
-    Lê a planilha de distribuição e normaliza colunas.
-    Aceita: 'PDF do Projeto', 'PDF do Autor', 'Link do Projeto (PDF)' -> 'pdf'
+    Lê a planilha e normaliza colunas.
+    _sig é a assinatura do cache (mtime do arquivo) — sempre que o arquivo mudar,
+    o cache é invalidado automaticamente.
     """
     df = pd.read_excel(caminho)
 
@@ -36,7 +37,6 @@ def carregar_distribuicao(caminho: str) -> pd.DataFrame:
         "PDF do Autor": "pdf",
         "Link do Projeto (PDF)": "pdf",
     }
-    # aplica renomeações apenas se existirem
     df = df.rename(columns={k: v for k, v in cols_map.items() if k in df.columns})
 
     # garante colunas essenciais
@@ -97,7 +97,7 @@ def mostrar_pdf_projeto(row):
     if is_url:
         # Link externo (Drive/OneDrive etc.)
         st.link_button("🔗 Abrir projeto em nova aba", pdf_val)
-        # Caso o provedor permita embed, pode usar um iframe:
+        # Se o provedor permitir, você pode incorporar via iframe:
         # st.components.v1.iframe(pdf_val, height=600)
     else:
         # Arquivo local: pode ser caminho relativo/absoluto. Se for só o nome, busca em PASTA_PROJETOS
@@ -121,12 +121,19 @@ if not os.path.exists(ARQ_DISTRIB):
     st.error(f"Arquivo de distribuição não encontrado: {ARQ_DISTRIB}")
     st.stop()
 
-dist = carregar_distribuicao(ARQ_DISTRIB)
+# assinatura baseada no mtime do arquivo (sensível a alterações)
+mtime = os.path.getmtime(ARQ_DISTRIB)
+dist = carregar_distribuicao(ARQ_DISTRIB, mtime)
 log_df = carregar_log()
 
 # ========== SIDEBAR ==========
 st.sidebar.title("Pareceres - Plataforma Leonardo")
 modo = st.sidebar.radio("Selecione o modo:", ["Aluno", "Admin"])
+
+# Botão para recarregar a distribuição (limpa cache e reroda)
+if st.sidebar.button("🔄 Recarregar distribuição"):
+    st.cache_data.clear()
+    st.rerun()
 
 # ========== MODO ALUNO ==========
 if modo == "Aluno":
@@ -147,7 +154,7 @@ if modo == "Aluno":
         escrever_card_projeto(row)
         mostrar_pdf_projeto(row)
 
-    # Formulário apenas com upload
+    # Formulário apenas com upload (sem texto e sem nota)
     with st.form("form_parecer_anexo"):
         uploads = st.file_uploader(
             "Envie seu parecer (PDF, DOCX ou ZIP)",
@@ -241,3 +248,4 @@ else:
             "- O log CSV é `submissoes/log_submissoes.csv`.\n"
             "- Para disponibilizar os PDFs dos projetos, use a coluna **PDF do Projeto** (ou **PDF do Autor**/**Link do Projeto (PDF)**) na planilha."
         )
+
