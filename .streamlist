@@ -1,0 +1,3 @@
+[general]
+ADMIN_CODE = "uma_senha_bem_forte_aqui"
+.streamlit/secrets.toml
